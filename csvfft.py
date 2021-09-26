@@ -6,6 +6,7 @@ from ast import parse
 import csv
 import numpy as np
 import scipy as sp
+from scipy import signal
 
 parser = argparse.ArgumentParser()
 parser.add_argument( '--input', required=True )  # input file name
@@ -47,11 +48,11 @@ with open( args.input, 'r' ) as f:
 freqs = sp.fft.fftfreq( len(xs), args.period )
 
 if args.window is None:
-    pass
+    xfs = sp.fft.fft( xs )
 else:
-    pass
+    window = signal.get_window( args.window, len(xs) )
+    xfs = sp.fft.fft( xs*window )
 
-xfs = sp.fft.fft( xs )
 # Python:ScipyのFFT（scipy.fftpack）をやってみる。 - がれすたさんのDIY日記
 # ガレスタさん
 # https://gsmcustomeffects.hatenablog.com/entry/2018/08/10/011034
