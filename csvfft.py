@@ -18,7 +18,8 @@ parser.add_argument( '--figure', action='store_true' )  # show figure
 parser.add_argument( '--column', default=1, type=int )  # column number where signal stored
 parser.add_argument( '--name', action='store_true' )  # item name
 parser.add_argument( '--output', default=None )  # output file name
-parser.add_argument( '--overlap', type=int )
+parser.add_argument( '--overlap', type=int )  # overlap size
+parser.add_argument( '--frame', type=int )  # overlapping frame size
 
 try:
     args = parser.parse_args()
@@ -43,20 +44,54 @@ with open( args.input, 'r' ) as f:
     else:
         xs = [float(x[args.column-1]) for x in xs]
 
-    
-
-freqs = sp.fft.fftfreq( len(xs), args.period )
-
-if args.window is None:
-    xfs = sp.fft.fft( xs )
+if args.overlap is None:
+    xss = [xs]
+    frame = len(xs)
 else:
-    window = signal.get_window( args.window, len(xs) )
-    xfs = sp.fft.fft( xs*window )
+    """
+    1,2,3,4,5,6,7,8,9,10
+    75%:4,3,7,  10/1=10, if x*(4-3)+4 < N?, x=(10-4)/1=6
+        1,2,3,4
+        2,3,4,5
+        3,4,5,6
+        4,5,6,7
+        5,6,7,8
+        6,7,8,9
+        7,8,9,10
+    50%:4,2,4, 10/2=5, if x*(4-2)+4 < N?, x=(10-4)/2=3
+        1,2,3,4
+        3,4,5,6
+        5,6,7,8
+        7,8,9,10
+    25%:4,1,3, 10/3=3, if x*(4-1)+4 < N?, x=(10-4)/3=2
+        1,2,3,4
+        4,5,6,7
+        7,8,9,10
+    0%:4,0,2, if x*(4-0)+4 < N?, x=(10-4)/4=1
+        1,2,3,4
+        5,6,7,8
+    """
+    """
+    If xs = [1,2,3,4,5,6,7,8,9,10], overlap = 2, frame = 4,
+    xss = [[1, 2, 3, 4], [3, 4, 5, 6], [5, 6, 7, 8], [7, 8, 9, 10]]
+    """
+    frame = args.frame
+    overlap = args.overlap
+    xss = [xs[i*(frame-overlap):i*(frame-overlap)+frame] for i in range( int((len(xs)-frame)/(frame-overlap))+1 )]
+
+freqs = sp.fft.fftfreq( frame, args.period )
+
+if args.window is not None:
+    window = signal.get_window( args.window, frame )
+    xss = [xs*window for xs in xss]
+
+xfss = [sp.fft.fft(xs) for xs in xss]
 
 # Python:ScipyのFFT（scipy.fftpack）をやってみる。 - がれすたさんのDIY日記
 # ガレスタさん
 # https://gsmcustomeffects.hatenablog.com/entry/2018/08/10/011034
-amplitudes = [np.sqrt( xf.real**2 + xf.imag**2 ) for xf in xfs]
+amplitudess = [[np.sqrt( xf.real**2 + xf.imag**2 ) for xf in xfs] for xfs in xfss]
+amplitudes = [np.mean(amps) for amps in zip(*amplitudess)]
 
 if args.output is None:
     output_file_name = 'fft_result.csv'
