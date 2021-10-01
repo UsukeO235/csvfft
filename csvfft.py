@@ -105,5 +105,6 @@ with open( output_file_name, 'w' ) as f:
 
 if args.figure:
     from matplotlib import pyplot as plt
-    plt.plot( freqs, amplitudes )
+    plt.yscale( 'log' )
+    plt.plot( freqs[:int(len(freqs)/2)], amplitudes[:int(len(freqs)/2)] )
     plt.show()
