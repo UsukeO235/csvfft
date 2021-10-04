@@ -13,3 +13,4 @@ cd csvfft/sample/sine_wave
 python generate.py
 python ../../csvfft.py --input input.csv --period 0.001 --delimiter tab --name --figure --column 2
 ```
+![result](https://user-images.githubusercontent.com/63541132/135855217-2945add7-6a81-421d-9cc4-55214e1bffe1.png)
