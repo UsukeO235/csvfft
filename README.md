@@ -9,7 +9,7 @@ FFT is a key point of frequency anlysis, but it is bothersome to execute correct
 # Sample Usage
 ```bash
 git clone https://github.com/UsukeO235/csvfft.git
-cd csvfft/sample
+cd csvfft/sample/sine_wave
 python generate.py
-python ../csvfft.py --input input.csv --period 0.001 --delimiter tab --name --figure --column 2
+python ../../csvfft.py --input input.csv --period 0.001 --delimiter tab --name --figure --column 2
 ```
