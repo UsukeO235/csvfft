@@ -110,10 +110,14 @@ if args.stft:  # short time fourier transform
             for freq, amp in zip(freqs, amplitudess[i]):
                 f.write( str(i) + ',' + str(freq) + ',' + str(amp) + '\n' )
 
-    """
     if args.figure:
         from matplotlib import pyplot as plt
-    """
+
+        stft_image = np.array( amplitudess ).transpose()
+        plt.imshow( stft_image, cmap='jet', aspect=float(len(amplitudess))/float(len(freqs)) )
+        plt.colorbar()
+        plt.show()
+
 else:
     # Python:ScipyのFFT（scipy.fftpack）をやってみる。 - がれすたさんのDIY日記
     # ガレスタさん
