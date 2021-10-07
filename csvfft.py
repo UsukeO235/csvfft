@@ -96,11 +96,12 @@ if args.stft:  # short time fourier transform
     freqs = freqs[:int(len(freqs)/2)]
     xfss = [xfs[:int(len(xfs)/2)] for xfs in xfss]
 
-    # args.range[0] <= freq <= args.range[1]
-    start_index = bisect.bisect_left( freqs, args.range[0] )
-    end_index = bisect.bisect_right( freqs, args.range[1] )
-    freqs = freqs[start_index:end_index]
-    xfss = [xfs[start_index:end_index] for xfs in xfss]
+    if args.range:
+        # args.range[0] <= freq <= args.range[1]
+        start_index = bisect.bisect_left( freqs, args.range[0] )
+        end_index = bisect.bisect_right( freqs, args.range[1] )
+        freqs = freqs[start_index:end_index]
+        xfss = [xfs[start_index:end_index] for xfs in xfss]
 
     # Python:ScipyのFFT（scipy.fftpack）をやってみる。 - がれすたさんのDIY日記
     # ガレスタさん
