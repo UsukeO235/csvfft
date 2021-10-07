@@ -21,6 +21,7 @@ parser.add_argument( '--output', default=None )  # output file name
 parser.add_argument( '--overlap', type=int )  # overlap size
 parser.add_argument( '--frame', type=int )  # overlapping frame size
 parser.add_argument( '--stft', action='store_true' )  # short time fourier transform
+parser.add_argument( '--range', nargs=2, type=float )  # frequency range
 
 try:
     args = parser.parse_args()
@@ -89,9 +90,17 @@ if args.window is not None:
 xfss = [sp.fft.fft(xs) for xs in xss]
 
 if args.stft:  # short time fourier transform
+    import bisect
+    
     # extract the former half of list
     freqs = freqs[:int(len(freqs)/2)]
     xfss = [xfs[:int(len(xfs)/2)] for xfs in xfss]
+
+    # args.range[0] <= freq <= args.range[1]
+    start_index = bisect.bisect_left( freqs, args.range[0] )
+    end_index = bisect.bisect_right( freqs, args.range[1] )
+    freqs = freqs[start_index:end_index]
+    xfss = [xfs[start_index:end_index] for xfs in xfss]
 
     # Python:ScipyのFFT（scipy.fftpack）をやってみる。 - がれすたさんのDIY日記
     # ガレスタさん
