@@ -23,9 +23,12 @@ git clone https://github.com/UsukeO235/csvfft.git
 cd csvfft/sample/stft
 python ../../csvfft.py --input input.csv --period 0.001 --delimiter tab --name --figure --column 2 --overlap 180 --frame 200 --stft
 ```
+![result](https://user-images.githubusercontent.com/63541132/136400304-bb733539-f314-471a-9a29-418ac13a8966.png)
+
 ### STFT with frequency range setting
 ```bash
 git clone https://github.com/UsukeO235/csvfft.git
 cd csvfft/sample/stft
 python ../../csvfft.py --input input.csv --period 0.001 --delimiter tab --name --figure --column 2 --overlap 180 --frame 200 --stft --range 80.0 250.0
 ```
+![result_range](https://user-images.githubusercontent.com/63541132/136400348-9d855f6f-5dc6-4f4d-9bf4-dee4e6a901b0.png)
