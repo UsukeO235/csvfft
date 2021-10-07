@@ -20,6 +20,8 @@ parser.add_argument( '--name', action='store_true' )  # item name
 parser.add_argument( '--output', default=None )  # output file name
 parser.add_argument( '--overlap', type=int )  # overlap size
 parser.add_argument( '--frame', type=int )  # overlapping frame size
+parser.add_argument( '--stft', action='store_true' )  # short time fourier transform
+parser.add_argument( '--range', nargs=2, type=float )  # frequency range
 
 try:
     args = parser.parse_args()
@@ -87,24 +89,63 @@ if args.window is not None:
 
 xfss = [sp.fft.fft(xs) for xs in xss]
 
-# Python:ScipyのFFT（scipy.fftpack）をやってみる。 - がれすたさんのDIY日記
-# ガレスタさん
-# https://gsmcustomeffects.hatenablog.com/entry/2018/08/10/011034
-amplitudess = [[np.sqrt( xf.real**2 + xf.imag**2 ) for xf in xfs] for xfs in xfss]
-amplitudes = [np.mean(amps) for amps in zip(*amplitudess)]
+if args.stft:  # short time fourier transform
+    import bisect
+    
+    # extract the former half of list
+    freqs = freqs[:int(len(freqs)/2)]
+    xfss = [xfs[:int(len(xfs)/2)] for xfs in xfss]
 
-if args.output is None:
-    output_file_name = 'fft_result.csv'
+    # args.range[0] <= freq <= args.range[1]
+    start_index = bisect.bisect_left( freqs, args.range[0] )
+    end_index = bisect.bisect_right( freqs, args.range[1] )
+    freqs = freqs[start_index:end_index]
+    xfss = [xfs[start_index:end_index] for xfs in xfss]
+
+    # Python:ScipyのFFT（scipy.fftpack）をやってみる。 - がれすたさんのDIY日記
+    # ガレスタさん
+    # https://gsmcustomeffects.hatenablog.com/entry/2018/08/10/011034
+    amplitudess = [[np.sqrt( xf.real**2 + xf.imag**2 ) for xf in xfs] for xfs in xfss]
+
+    if args.output is None:
+        output_file_name = 'stft_result.csv'
+    else:
+        output_file_name = args.output
+
+    with open( output_file_name, 'w' ) as f:
+        f.write( 'index,frequency,amplitude\n' )
+
+        for i in range(len(amplitudess)):
+            for freq, amp in zip(freqs, amplitudess[i]):
+                f.write( str(i) + ',' + str(freq) + ',' + str(amp) + '\n' )
+
+    if args.figure:
+        from matplotlib import pyplot as plt
+
+        stft_image = np.array( amplitudess ).transpose()
+        plt.imshow( stft_image, cmap='jet', aspect=float(len(amplitudess))/float(len(freqs)) )
+        plt.colorbar()
+        plt.show()
+
 else:
-    output_file_name = args.output
+    # Python:ScipyのFFT（scipy.fftpack）をやってみる。 - がれすたさんのDIY日記
+    # ガレスタさん
+    # https://gsmcustomeffects.hatenablog.com/entry/2018/08/10/011034
+    amplitudess = [[np.sqrt( xf.real**2 + xf.imag**2 ) for xf in xfs] for xfs in xfss]
+    amplitudes = [np.mean(amps) for amps in zip(*amplitudess)]
 
-with open( output_file_name, 'w' ) as f:
-    f.write( 'frequency,amplitude\n' )
-    for freq, amp in zip(freqs, amplitudes):
-        f.write( str(freq) + ',' + str(amp) + '\n' )
+    if args.output is None:
+        output_file_name = 'fft_result.csv'
+    else:
+        output_file_name = args.output
 
-if args.figure:
-    from matplotlib import pyplot as plt
-    plt.yscale( 'log' )
-    plt.plot( freqs[:int(len(freqs)/2)], amplitudes[:int(len(freqs)/2)] )
-    plt.show()
+    with open( output_file_name, 'w' ) as f:
+        f.write( 'frequency,amplitude\n' )
+        for freq, amp in zip(freqs, amplitudes):
+            f.write( str(freq) + ',' + str(amp) + '\n' )
+
+    if args.figure:
+        from matplotlib import pyplot as plt
+        plt.yscale( 'log' )
+        plt.plot( freqs[:int(len(freqs)/2)], amplitudes[:int(len(freqs)/2)] )
+        plt.show()
